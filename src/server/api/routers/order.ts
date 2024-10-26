@@ -6,7 +6,6 @@ const SortOrder = z.enum(["asc", "desc"]);
 const SortField = z.enum(["createdAt", "totalAmount", "status"]);
 
 const orderFiltersSchema = z.object({
-  customerId: z.string(),
   status: z.nativeEnum(FulfillmentStatus).optional(),
   search: z.string().optional(),
   dateRange: z
