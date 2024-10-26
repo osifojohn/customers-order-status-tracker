@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -10,11 +7,77 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
+
+model User {
+    id        String   @id @default(cuid())
     name      String
+    hashedPassword String
+    email     String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    orders    Order[]
+}
+
+model Order {
+    id              String      @id @default(cuid())
+    customerId      String
+    customer        User        @relation(fields: [customerId], references: [id])
+    status          FulfillmentStatus 
+    shippingAddress Address?
+    orderItems      OrderItem[]
+    totalAmount     Decimal     @default(0)
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+
+    @@index([customerId])
+    @@index([status])
+}
+
+model OrderItem {
+    id        String   @id @default(cuid())
+    orderId   String
+    order     Order    @relation(fields: [orderId], references: [id])
+    productId String
+    product   Product  @relation(fields: [productId], references: [id])
+    quantity  Int
+    price     Decimal
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@index([name])
+    @@index([orderId])
+    @@index([productId])
+}
+
+model Product {
+    id          String      @id @default(cuid())
+    name        String
+    description String?
+    price       Decimal
+    sku         String      @unique
+    orderItems  OrderItem[]
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    @@index([sku])
+}
+
+model Address {
+    id        String   @id @default(cuid())
+    street    String
+    city      String
+    state     String
+    zipCode   String
+    country   String
+    orderId   String   @unique
+    order     Order    @relation(fields: [orderId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum FulfillmentStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }
