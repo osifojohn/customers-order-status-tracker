@@ -22,7 +22,7 @@ model Order {
     id              String      @id @default(cuid())
     customerId      String
     customer        User        @relation(fields: [customerId], references: [id])
-    status          FulfillmentStatus 
+    status          FulfillmentStatus
     shippingAddress Address?
     orderItems      OrderItem[]
     totalAmount     Decimal     @default(0)
@@ -81,3 +81,5 @@ enum FulfillmentStatus {
   DELIVERED
   CANCELLED
 }
+
+
