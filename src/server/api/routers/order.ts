@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { FulfillmentStatus, type Prisma } from "@prisma/client";
+import { type Decimal } from "@prisma/client/runtime/library";
 
 const SortOrder = z.enum(["asc", "desc"]);
 const SortField = z.enum(["createdAt", "totalAmount", "status"]);
@@ -22,6 +23,11 @@ const orderFiltersSchema = z.object({
 const paginationSchema = z.object({
   limit: z.number().min(1).max(100).default(10),
 });
+
+const convertDecimal = (decimal: Decimal | null | undefined): number => {
+  if (!decimal) return 0;
+  return decimal.toNumber();
+};
 
 export const orderRouter = createTRPCRouter({
   getAllCustomerOrders: publicProcedure
@@ -45,6 +51,44 @@ export const orderRouter = createTRPCRouter({
 
       if (search) {
         whereConditions.OR = [
+          {
+            customer: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            id: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            customer: {
+              email: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            shippingAddress: {
+              country: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            shippingAddress: {
+              state: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
           {
             shippingAddress: {
               city: {
@@ -116,8 +160,22 @@ export const orderRouter = createTRPCRouter({
         },
       });
 
+      // Converting Decimal values to numbers before sending to client
+      const serializedOrders = orders.map((order) => ({
+        ...order,
+        totalAmount: convertDecimal(order.totalAmount),
+        orderItems: order.orderItems.map((item) => ({
+          ...item,
+          price: convertDecimal(item.price),
+          product: {
+            ...item.product,
+            price: convertDecimal(item.product.price),
+          },
+        })),
+      }));
+
       return {
-        items: orders,
+        items: serializedOrders,
         pagination: {
           page,
           limit,

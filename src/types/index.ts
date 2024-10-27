@@ -1,4 +1,5 @@
 import { type orderRouter } from "@/server/api/routers/order";
+import { type FulfillmentStatus } from "@prisma/client";
 import { type inferRouterOutputs } from "@trpc/server";
 
 type RouterOutput = inferRouterOutputs<typeof orderRouter>;
@@ -11,12 +12,12 @@ export interface PaginationState {
 }
 
 export interface DateRange {
-  from: Date | undefined;
-  to: Date | undefined;
+  from: Date;
+  to: Date;
 }
 export interface FilterState {
-  search: string;
-  status?: string;
+  search?: string;
+  status?: FulfillmentStatus;
   dateRange?: DateRange;
 }
 

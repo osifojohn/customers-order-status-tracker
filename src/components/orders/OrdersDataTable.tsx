@@ -1,7 +1,11 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -10,71 +14,66 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import { api } from "@/trpc/react";
-import type {
-  FilterState,
-  OrdersOutput,
-  PaginationState,
-  SortingState,
-} from "@/types";
-
-import { PaginationControls } from "../pagination/PaginationControls";
-import { tableColumns } from "./tableColumns";
+import type { OrdersOutput } from "@/types";
 import { DataTableFilters } from "./DataTableFilters";
 import { TableLoadingShimmer } from "./TableLoadingShimmer";
+import { PaginationControls } from "../pagination/PaginationControls";
+import { useTableUrl } from "@/hooks/useTableUrl";
+import { tableColumns } from "./tableColumns";
+import { useTableParams } from "@/hooks/useOrdersParams";
+import { useTableData } from "@/hooks/useTableData";
 
 interface OrdersDataTableProps {
   initailOrders: OrdersOutput;
 }
+
 export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
-  const router = useRouter();
-  const [filters, setFilters] = React.useState<FilterState>({
-    search: "",
-    status: undefined,
-    dateRange: undefined,
+  const { updateUrl } = useTableUrl();
+  const { initialFilters, initialPagination, initialSorting } =
+    useTableParams();
+
+  const [filters, setFilters] = useState(initialFilters);
+  const [pagination, setPagination] = useState(initialPagination);
+  const [sorting, setSorting] = useState(initialSorting);
+
+  const { data, totalPages, totalItems, isLoading, isError, error } =
+    useTableData({
+      filters,
+      pagination,
+      sorting,
+      initialData: initailOrders,
+    });
+
+  useEffect(() => {
+    updateUrl({
+      page: String(pagination.pageIndex + 1),
+      limit: String(pagination.pageSize),
+      search: filters.search,
+      status: filters.status,
+      sortBy: sorting[0]?.id,
+      sortOrder: sorting[0]?.desc ? "desc" : "asc",
+      startDate: filters.dateRange?.from?.toISOString(),
+      endDate: filters.dateRange?.to?.toISOString(),
+    });
+  }, [filters, pagination, sorting, updateUrl]);
+
+  const columns = useMemo(() => tableColumns, []);
+
+  const table = useReactTable({
+    data,
+    columns,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      pagination,
+    },
+    manualFiltering: true,
+    manualPagination: true,
+    manualSorting: true,
+    getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
   });
-
-  const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
-
-  const [sorting, setSorting] = React.useState<SortingState>({
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
-
-  const ordersQuery = api.order.getAllCustomerOrders.useQuery({
-    page: pagination.pageIndex + 1,
-    limit: pagination.pageSize,
-    status: filters.status,
-    search: filters.search || undefined,
-    dateRange: filters.dateRange,
-    sortBy: sorting.sortBy,
-    sortOrder: sorting.sortOrder,
-  });
-
-  const data = ordersQuery.data?.items ?? [];
-  const totalPages = ordersQuery.data?.pagination.totalPages ?? 0;
-  const totalItems = ordersQuery.data?.pagination.totalItems ?? 0;
-
-  const handleSortingChange = (column: string) => {
-    setSorting((current) => ({
-      sortBy: column,
-      sortOrder:
-        current.sortBy === column && current.sortOrder === "asc"
-          ? "desc"
-          : "asc",
-    }));
-  };
 
   return (
     <div className="space-y-4">
@@ -85,65 +84,54 @@ export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
         setPagination={setPagination}
       />
 
-      {ordersQuery.isPending ? (
+      {isLoading ? (
         <TableLoadingShimmer />
       ) : (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                {tableColumns.map((column) => (
-                  <TableHead
-                    key={column.id}
-                    className="cursor-pointer"
-                    onClick={() => handleSortingChange(column.id)}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span>{column.header}</span>
-                      <ArrowUpDown className="h-4 w-4" />
-                    </div>
+                {table.getFlatHeaders().map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                   </TableHead>
                 ))}
-                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {data.map((row) => (
+              {table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
-                  {tableColumns.map((column) => (
-                    <TableCell key={column.id}>
-                      {column.cell({ getValue: () => row[column.accessorKey] })}
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          disabled
-                          onClick={() => router.push(`/orders/${row.id}`)}
-                        >
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled>Edit Order</DropdownMenuItem>
-                        <DropdownMenuItem disabled className="text-red-600">
-                          Cancel Order
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
                 </TableRow>
               ))}
+
+              {!isLoading && !isError && data.length === 0 && (
+                <div className="flex items-center justify-center py-24">
+                  No result found
+                </div>
+              )}
+
+              {!isLoading && data.length !== 0 && isError && error && (
+                <div className="py-10">{error.message}</div>
+              )}
             </TableBody>
           </Table>
         </div>
       )}
 
       <PaginationControls
+        isDataLoading={isLoading}
         pagination={pagination}
         totalItems={totalItems}
         totalPages={totalPages}

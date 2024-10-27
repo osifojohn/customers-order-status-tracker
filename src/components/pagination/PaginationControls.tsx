@@ -6,6 +6,7 @@ interface PaginationControlsProps {
   pagination: PaginationState;
   totalItems: number;
   totalPages: number;
+  isDataLoading: boolean;
   onPaginationChange: (newPagination: PaginationState) => void;
 }
 
@@ -13,6 +14,7 @@ export function PaginationControls({
   pagination,
   totalItems,
   totalPages,
+  isDataLoading,
   onPaginationChange,
 }: PaginationControlsProps) {
   const currentPage = pagination.pageIndex;
@@ -86,6 +88,7 @@ export function PaginationControls({
               <span className="px-2">...</span>
             ) : (
               <Button
+                disabled={isDataLoading}
                 variant={currentPage === pageNumber - 1 ? "default" : "outline"}
                 size="sm"
                 onClick={() =>
@@ -109,11 +112,12 @@ export function PaginationControls({
               pageIndex: currentPage + 1,
             })
           }
-          disabled={currentPage === totalPages - 1}
+          disabled={currentPage === totalPages - 1 || isDataLoading}
         >
           ›
         </Button>
         <Button
+          disabled={isDataLoading}
           variant="outline"
           size="sm"
           onClick={() =>
@@ -122,7 +126,7 @@ export function PaginationControls({
               pageIndex: totalPages - 1,
             })
           }
-          disabled={currentPage === totalPages - 1}
+          disabled={currentPage === totalPages - 1 || isDataLoading}
         >
           ⟫
         </Button>
