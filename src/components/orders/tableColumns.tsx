@@ -30,6 +30,38 @@ export const tableColumns: OrderColumn[] = [
     cell: ({ row }) => <StatusCell status={row.getValue("status")} />,
   },
   {
+    accessorKey: "orderItems",
+    header: () => <div>Products</div>,
+    cell: ({ row }) => {
+      const { orderItems } = row.original;
+      return (
+        <div className="space-y-1">
+          {orderItems?.map((item) => (
+            <div key={item.product.id} className="text-sm">
+              {item.product.name} ({item.quantity})
+            </div>
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "orderItems",
+    header: () => <div>Total Quantity</div>,
+    cell: ({ row }) => {
+      const { orderItems } = row.original;
+      const totalQuantity = orderItems?.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0,
+      );
+      return (
+        <div className="font-medium">
+          <span>{totalQuantity}</span>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "totalAmount",
     header: ({ column }) => (
       <SortButton column={column}>Total Amount</SortButton>
