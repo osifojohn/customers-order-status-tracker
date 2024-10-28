@@ -4,25 +4,26 @@ import { type inferRouterOutputs } from "@trpc/server";
 
 type RouterOutput = inferRouterOutputs<typeof orderRouter>;
 export type OrdersOutput = RouterOutput["getAllCustomerOrders"];
-export type Order = OrdersOutput["items"];
+export type Order = OrdersOutput["items"][number];
+
+export interface DateRange {
+  from: Date;
+  to?: Date;
+}
+
+export interface FilterState {
+  search: string;
+  status?: FulfillmentStatus;
+  dateRange?: DateRange;
+}
 
 export interface PaginationState {
   pageIndex: number;
   pageSize: number;
 }
 
-export interface DateRange {
-  from: Date;
-  to: Date;
-}
-export interface FilterState {
-  search?: string;
-  status?: FulfillmentStatus;
-  dateRange?: DateRange;
-}
-
 export interface SortingState {
-  sortBy: string;
+  sortBy: "createdAt" | "totalAmount" | "status";
   sortOrder: "asc" | "desc";
 }
 

@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type SortingState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -22,6 +23,7 @@ import { useTableUrl } from "@/hooks/useTableUrl";
 import { tableColumns } from "./tableColumns";
 import { useTableParams } from "@/hooks/useOrdersParams";
 import { useTableData } from "@/hooks/useTableData";
+import ErrorAlert from "../ErrorAlert";
 
 interface OrdersDataTableProps {
   initailOrders: OrdersOutput;
@@ -34,9 +36,9 @@ export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
 
   const [filters, setFilters] = useState(initialFilters);
   const [pagination, setPagination] = useState(initialPagination);
-  const [sorting, setSorting] = useState(initialSorting);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
 
-  const { data, totalPages, totalItems, isLoading, isError, error } =
+  const { data, totalPages, totalItems, isLoading, isError, error, retry } =
     useTableData({
       filters,
       pagination,
@@ -86,6 +88,14 @@ export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
 
       {isLoading ? (
         <TableLoadingShimmer />
+      ) : isError ? (
+        <div className="flex w-full items-start justify-center">
+          {" "}
+          <ErrorAlert
+            message={error?.message ?? "An error occurred while loading data."}
+            onRetry={() => retry()}
+          />
+        </div>
       ) : (
         <div className="rounded-md border">
           <Table>
@@ -103,27 +113,28 @@ export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
             </TableHeader>
 
             <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
+              {data.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="py-4 text-center"
+                  >
+                    No data available
+                  </TableCell>
                 </TableRow>
-              ))}
-
-              {!isLoading && !isError && data.length === 0 && (
-                <div className="flex items-center justify-center py-24">
-                  No result found
-                </div>
-              )}
-
-              {!isLoading && data.length !== 0 && isError && error && (
-                <div className="py-10">{error.message}</div>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -131,6 +142,7 @@ export function OrdersDataTable({ initailOrders }: OrdersDataTableProps) {
       )}
 
       <PaginationControls
+        isError={isError}
         isDataLoading={isLoading}
         pagination={pagination}
         totalItems={totalItems}

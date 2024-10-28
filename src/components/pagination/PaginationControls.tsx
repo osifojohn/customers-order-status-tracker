@@ -7,65 +7,74 @@ interface PaginationControlsProps {
   totalItems: number;
   totalPages: number;
   isDataLoading: boolean;
+  isError: boolean;
   onPaginationChange: (newPagination: PaginationState) => void;
 }
+
+type PaginationItem = number | "...";
 
 export function PaginationControls({
   pagination,
   totalItems,
   totalPages,
-  isDataLoading,
+  isDataLoading = false,
+  isError = false,
   onPaginationChange,
 }: PaginationControlsProps) {
-  const currentPage = pagination.pageIndex;
-  const pageSize = pagination.pageSize;
+  const currentPageIndex = pagination.pageIndex;
+  const itemsPerPage = pagination.pageSize;
 
-  const generatePaginationNumbers = () => {
-    const current = currentPage + 1;
-    const total = totalPages;
-    const delta = 2;
-    const range: number[] = [];
-    const rangeWithDots: (number | string)[] = [];
-    let l: number;
+  const generatePaginationNumbers = (): PaginationItem[] => {
+    const currentDisplayPage = currentPageIndex + 1;
+    const visiblePagesRadius = 2;
+    const pageNumbers: number[] = [];
+    const paginationItems: PaginationItem[] = [];
+    let lastAddedPage: number | undefined;
 
-    for (let i = 1; i <= total; i++) {
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
       if (
-        i === 1 ||
-        i === total ||
-        (i >= current - delta && i <= current + delta)
+        pageNum === 1 ||
+        pageNum === totalPages ||
+        (pageNum >= currentDisplayPage - visiblePagesRadius &&
+          pageNum <= currentDisplayPage + visiblePagesRadius)
       ) {
-        range.push(i);
+        pageNumbers.push(pageNum);
       }
     }
 
-    for (let i of range) {
-      if (l) {
-        if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l !== 1) {
-          rangeWithDots.push("...");
+    for (const pageNum of pageNumbers) {
+      if (lastAddedPage) {
+        if (pageNum - lastAddedPage === 2) {
+          paginationItems.push(lastAddedPage + 1);
+        } else if (pageNum - lastAddedPage !== 1) {
+          paginationItems.push("...");
         }
       }
-      rangeWithDots.push(i);
-      l = i;
+      paginationItems.push(pageNum);
+      lastAddedPage = pageNum;
     }
 
-    return rangeWithDots;
+    return paginationItems;
   };
+
+  const startItemIndex = currentPageIndex * itemsPerPage + 1;
+
+  const endItemIndex = Math.min(
+    (currentPageIndex + 1) * itemsPerPage,
+    totalItems,
+  );
 
   return (
     <div className="flex items-center justify-between">
       <div className="text-sm text-gray-500">
-        Showing {currentPage * pageSize + 1} to{" "}
-        {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems}{" "}
-        entries
+        Showing {startItemIndex} to {endItemIndex} of {totalItems} entries
       </div>
       <div className="flex items-center space-x-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPaginationChange({ ...pagination, pageIndex: 0 })}
-          disabled={currentPage === 0}
+          disabled={currentPageIndex === 0 || isDataLoading}
         >
           ⟪
         </Button>
@@ -75,30 +84,32 @@ export function PaginationControls({
           onClick={() =>
             onPaginationChange({
               ...pagination,
-              pageIndex: currentPage - 1,
+              pageIndex: currentPageIndex - 1,
             })
           }
-          disabled={currentPage === 0}
+          disabled={currentPageIndex === 0 || isDataLoading || isError}
         >
           ‹
         </Button>
-        {generatePaginationNumbers().map((pageNumber, index) => (
+        {generatePaginationNumbers().map((pageItem, index) => (
           <React.Fragment key={index}>
-            {pageNumber === "..." ? (
+            {pageItem === "..." ? (
               <span className="px-2">...</span>
             ) : (
               <Button
-                disabled={isDataLoading}
-                variant={currentPage === pageNumber - 1 ? "default" : "outline"}
+                variant={
+                  currentPageIndex === pageItem - 1 ? "default" : "outline"
+                }
                 size="sm"
                 onClick={() =>
                   onPaginationChange({
                     ...pagination,
-                    pageIndex: (pageNumber as number) - 1,
+                    pageIndex: pageItem - 1,
                   })
                 }
+                disabled={isDataLoading || isError}
               >
-                {pageNumber}
+                {pageItem}
               </Button>
             )}
           </React.Fragment>
@@ -109,15 +120,16 @@ export function PaginationControls({
           onClick={() =>
             onPaginationChange({
               ...pagination,
-              pageIndex: currentPage + 1,
+              pageIndex: currentPageIndex + 1,
             })
           }
-          disabled={currentPage === totalPages - 1 || isDataLoading}
+          disabled={
+            currentPageIndex === totalPages - 1 || isDataLoading || isError
+          }
         >
           ›
         </Button>
         <Button
-          disabled={isDataLoading}
           variant="outline"
           size="sm"
           onClick={() =>
@@ -126,7 +138,9 @@ export function PaginationControls({
               pageIndex: totalPages - 1,
             })
           }
-          disabled={currentPage === totalPages - 1 || isDataLoading}
+          disabled={
+            currentPageIndex === totalPages - 1 || isDataLoading || isError
+          }
         >
           ⟫
         </Button>

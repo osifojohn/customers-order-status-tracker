@@ -7,7 +7,11 @@ import { CustomerCell } from "./CustomerCell";
 import { StatusCell } from "./StatusCell";
 import type { OrdersOutput } from "@/types";
 
-export const tableColumns: ColumnDef<OrdersOutput["items"][0]>[] = [
+type OrderColumn = ColumnDef<OrdersOutput["items"][0]> & {
+  accessorKey: string;
+};
+
+export const tableColumns: OrderColumn[] = [
   {
     accessorKey: "id",
     header: () => <div>Order ID</div>,
@@ -50,7 +54,8 @@ export const tableColumns: ColumnDef<OrdersOutput["items"][0]>[] = [
   },
   {
     id: "actions",
-    header: "",
+    accessorKey: "actions",
+    header: () => <div>Actions</div>,
     cell: ({ row }) => <ActionsCell orderId={row.original.id} />,
   },
 ];

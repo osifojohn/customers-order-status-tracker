@@ -1,17 +1,15 @@
 import { type FulfillmentStatus } from "@prisma/client";
 
 const statusColors: Record<FulfillmentStatus, string> = {
-  PENDING: "text-yellow-800",
-  PROCESSING: "text-blue-800",
-  SHIPPED: "text-green-800",
-  CANCELLED: "text-red-800",
-  DELIVERED: "text-blue-500",
+  PENDING: "text-yellow-500",
+  PROCESSING: "text-blue-500",
+  SHIPPED: "text-green-600",
+  CANCELLED: "text-red-600",
+  DELIVERED: "text-teal-500",
 };
 
 export const StatusCell = ({ status }: { status: FulfillmentStatus }) => (
-  <div
-    className={`bg-transparent text-xs uppercase ${statusColors[status] ?? "bg-gray-100"}`}
-  >
-    {status}
+  <div className={`bg-transparent ${statusColors[status] ?? "bg-gray-100"}`}>
+    {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
   </div>
 );

@@ -6,13 +6,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { type Column } from "@tanstack/react-table";
 
-interface SortButtonProps {
-  column: any;
+interface SortButtonProps<TData> {
+  column: Column<TData, unknown>;
   children: React.ReactNode;
 }
 
-export const SortButton = ({ column, children }: SortButtonProps) => {
+export function SortButton<TData>({
+  column,
+  children,
+}: SortButtonProps<TData>) {
   const isSorted = column.getIsSorted();
 
   return (
@@ -55,4 +59,4 @@ export const SortButton = ({ column, children }: SortButtonProps) => {
       </DropdownMenu>
     </div>
   );
-};
+}

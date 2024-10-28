@@ -19,7 +19,7 @@ export function TableLoadingShimmer() {
             {tableColumns.map((column) => (
               <TableHead key={column.id}>
                 <div className="flex items-center space-x-2">
-                  <span>{column.header as string}</span>
+                  <span>{column.accessorKey}</span>
                 </div>
               </TableHead>
             ))}
