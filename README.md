@@ -10,7 +10,7 @@ A modern, type-safe order management system built with Next.js, tRPC, and Prisma
 ## 🚀 Features
 
 - **Real-time Order Tracking**: View and manage fulfillment orders in a responsive table interface
-- **Smart Filtering**: Filter orders by:
+- **Smart Server-side Filtering**: Filter orders by:
   - Customer name, email
   - Order information: state, city, country, street, house number, orderId
   - Fulfillment status
@@ -83,7 +83,7 @@ npm prisma db seed
 5. **Start the development server**
 
 ```bash
-npm dev
+npm run dev
 ```
 
 Visit `http://localhost:3000` to see the application in action!
@@ -123,7 +123,7 @@ customers-order-status-tracker/
 ### Data Handling
 
 - Efficient server-side pagination
-- Advanced filtering capabilities
+- Advanced server-side filtering capabilities
 - Optimized database queries
 
 ## 📦 Deployment
