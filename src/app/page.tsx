@@ -1,11 +1,23 @@
-import { HydrateClient } from "@/trpc/server";
+"use client";
 
-export default async function Home() {
+import { useRouter } from "next/navigation";
+
+export default function Home() {
+  const router = useRouter();
+
+  const navigateToOrders = () => {
+    router.push("/orders");
+  };
+
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        Home page
-      </main>
-    </HydrateClient>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b">
+      <h1 className="text-2xl font-bold text-black">Home Page</h1>
+      <button
+        onClick={navigateToOrders}
+        className="mt-4 rounded bg-purple-600 px-4 py-2 text-white transition hover:bg-purple-500"
+      >
+        Go to Orders
+      </button>
+    </main>
   );
 }
