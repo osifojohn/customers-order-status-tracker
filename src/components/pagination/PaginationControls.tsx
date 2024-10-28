@@ -74,7 +74,7 @@ export function PaginationControls({
           variant="outline"
           size="sm"
           onClick={() => onPaginationChange({ ...pagination, pageIndex: 0 })}
-          disabled={currentPageIndex === 0 || isDataLoading}
+          disabled={currentPageIndex === 0 || isDataLoading  || isError}
         >
           ⟪
         </Button>
