@@ -1,3 +1,4 @@
+import { convertDecimal } from "@/server/api/routers/order";
 import { FulfillmentStatus, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -111,7 +112,7 @@ async function main() {
           }));
 
         const totalAmount = orderItems.reduce(
-          (sum, item) => sum + item.price * item.quantity,
+          (sum, item) => sum + convertDecimal(item.price) * item.quantity,
           0,
         );
 

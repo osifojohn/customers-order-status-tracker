@@ -24,7 +24,7 @@ const paginationSchema = z.object({
   limit: z.number().min(1).max(100).default(10),
 });
 
-const convertDecimal = (decimal: Decimal | null | undefined): number => {
+export const convertDecimal = (decimal: Decimal | null | undefined): number => {
   if (!decimal) return 0;
   return decimal.toNumber();
 };
