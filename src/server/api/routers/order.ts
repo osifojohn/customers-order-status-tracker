@@ -16,7 +16,7 @@ const orderFiltersSchema = z.object({
     })
     .optional(),
   sortBy: SortField.optional().default("createdAt"),
-  sortOrder: SortOrder.optional().default("desc"),
+  sortOrder: SortOrder.optional().default("asc"),
   page: z.number().min(1).default(1),
 });
 
