@@ -5,6 +5,8 @@ A modern, type-safe order management system built with Next.js, tRPC, and Prisma
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black)
 
+![Order Status Tracker UI](https://i.imghippo.com/files/AYfm8418Co.png)
+
 ## 🚀 Features
 
 - **Real-time Order Tracking**: View and manage fulfillment orders in a responsive table interface
