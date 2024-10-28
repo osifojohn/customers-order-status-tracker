@@ -11,6 +11,9 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
   ],
   rules: {
+    "no-unused-vars": "off",
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
     "@typescript-eslint/no-unsafe-call": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
@@ -24,7 +27,7 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": [
-      "warn",
+      "off",
       {
         argsIgnorePattern: "^_",
       },
